@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
-import { Loader2, ArrowLeft, Image as ImageIcon, RefreshCw, Download } from 'lucide-react'
+import { Loader2, ArrowLeft, Image as ImageIcon, RefreshCw, Download, Eye } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 import { AnalysisCanvas } from '@/components/analysis-canvas'
@@ -192,19 +192,27 @@ export default function AnalysisPage() {
           </div>
           <div className="flex items-center gap-2">
             {analysis.status === 'completed' && results.length > 0 && (
-              <Button onClick={exportPDF} disabled={exporting} variant="outline">
-                {exporting ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Exporting...
-                  </>
-                ) : (
-                  <>
-                    <Download className="mr-2 h-4 w-4" />
-                    Export PDF
-                  </>
-                )}
-              </Button>
+              <>
+                <Link href={`/review/${params.id}`}>
+                  <Button variant="default" className="gap-2">
+                    <Eye className="h-4 w-4" />
+                    Review Design
+                  </Button>
+                </Link>
+                <Button onClick={exportPDF} disabled={exporting} variant="outline">
+                  {exporting ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Exporting...
+                    </>
+                  ) : (
+                    <>
+                      <Download className="mr-2 h-4 w-4" />
+                      Export PDF
+                    </>
+                  )}
+                </Button>
+              </>
             )}
             {(analysis.status === 'pending' || analysis.status === 'failed') && (
               <Button onClick={triggerAnalysis} disabled={polling}>

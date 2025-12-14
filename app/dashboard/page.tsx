@@ -281,7 +281,7 @@ export default function DashboardPage() {
             {filteredAnalyses.map((analysis) => (
               <Link
                 key={analysis.id}
-                href={`/analysis/${analysis.id}`}
+                href={analysis.status === 'completed' ? `/review/${analysis.id}` : `/analysis/${analysis.id}`}
                 className="group rounded-lg border border-border bg-card p-6 transition-all hover:shadow-lg hover:border-primary/50"
               >
                 <div className="flex items-start justify-between mb-4">
