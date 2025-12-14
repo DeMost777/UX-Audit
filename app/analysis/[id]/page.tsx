@@ -193,12 +193,14 @@ export default function AnalysisPage() {
           <div className="flex items-center gap-2">
             {analysis.status === 'completed' && results.length > 0 && (
               <>
-                <Link href={`/review/${params.id}`}>
-                  <Button variant="default" className="gap-2">
-                    <Eye className="h-4 w-4" />
-                    Review Design
-                  </Button>
-                </Link>
+                <Button 
+                  variant="default" 
+                  className="gap-2"
+                  onClick={() => router.push(`/review/${params.id}`)}
+                >
+                  <Eye className="h-4 w-4" />
+                  Review Design
+                </Button>
                 <Button onClick={exportPDF} disabled={exporting} variant="outline">
                   {exporting ? (
                     <>
