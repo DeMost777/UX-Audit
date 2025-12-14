@@ -49,8 +49,44 @@ export async function GET(
       .eq('analysis_id', id)
       .single()
 
+    // Generate signed URL for the image if it's stored in Supabase Storage
+    // This handles both public and private buckets
+    let imageUrl = analysis.file_url
+    
+    // If the URL is a Supabase storage URL, try to generate a signed URL
+    // This works for both public and private buckets
+    if (analysis.file_url && analysis.file_url.includes('supabase.co/storage')) {
+      try {
+        // Extract file path from URL
+        // Format: https://[project].supabase.co/storage/v1/object/public/[bucket]/[path]
+        // or: https://[project].supabase.co/storage/v1/object/sign/[bucket]/[path]
+        const urlParts = analysis.file_url.split('/storage/v1/object/')
+        if (urlParts.length > 1) {
+          const remainingPath = urlParts[1]
+          const pathParts = remainingPath.split('/')
+          const bucket = pathParts[0]
+          const filePath = pathParts.slice(1).join('/')
+          
+          // Generate signed URL (valid for 1 hour)
+          const { data: signedUrlData, error: signedError } = await supabase.storage
+            .from(bucket)
+            .createSignedUrl(filePath, 3600)
+          
+          if (!signedError && signedUrlData) {
+            imageUrl = signedUrlData.signedUrl
+          }
+        }
+      } catch (err) {
+        console.error('Error generating signed URL:', err)
+        // Fall back to original URL
+      }
+    }
+
     return NextResponse.json({
-      analysis,
+      analysis: {
+        ...analysis,
+        file_url: imageUrl,
+      },
       results: results || [],
       metadata: metadata || null,
     })

@@ -65,9 +65,13 @@ export async function POST(request: NextRequest) {
     }
 
     // Get public URL for the uploaded file
+    // Note: The bucket should be set to public in Supabase for this to work
+    // If using a private bucket, you'll need to use signed URLs instead
     const { data: urlData } = supabase.storage
       .from('design-uploads')
       .getPublicUrl(filePath)
+    
+    const fileUrl = urlData.publicUrl
 
     // Determine file type for database
     const fileType = fileExt?.toLowerCase() === 'png' ? 'png' : 
@@ -80,7 +84,7 @@ export async function POST(request: NextRequest) {
       .insert({
         user_id: user.id,
         file_name: file.name,
-        file_url: urlData.publicUrl,
+        file_url: fileUrl,
         file_type: fileType,
         status: 'pending',
       })
