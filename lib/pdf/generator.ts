@@ -173,8 +173,8 @@ export async function generatePDF(data: PDFData): Promise<Blob> {
     doc.setTextColor(0, 0, 0)
   })
 
-  // Footer on last page
-  const pageCount = doc.getNumberOfPages()
+  // Footer on all pages
+  const pageCount = (doc as any).internal.getNumberOfPages()
   for (let i = 1; i <= pageCount; i++) {
     doc.setPage(i)
     doc.setFontSize(8)

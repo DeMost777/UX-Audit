@@ -3,7 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const supabase = await createClient()
@@ -18,7 +18,7 @@ export async function GET(
       )
     }
 
-    const { id } = params
+    const { id } = await params
 
     // Fetch analysis with results and metadata
     const { data: analysis, error: analysisError } = await supabase
