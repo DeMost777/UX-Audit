@@ -31,6 +31,7 @@ export function AnalysisCanvas({
   onIssueClick,
 }: AnalysisCanvasProps) {
   const [selectedIssue, setSelectedIssue] = useState<AnalysisResult | null>(null)
+  const [imageError, setImageError] = useState(false)
 
   const handleIssueClick = (result: AnalysisResult) => {
     setSelectedIssue(result)
@@ -82,15 +83,44 @@ export function AnalysisCanvas({
             margin: '0 auto',
           }}
         >
-          <img
-            src={imageUrl}
-            alt="Design analysis"
-            className="w-full h-full object-contain"
-            style={{
-              width: `${imageWidth * displayScale}px`,
-              height: `${imageHeight * displayScale}px`,
-            }}
-          />
+          {imageError ? (
+            <div className="flex h-full w-full items-center justify-center bg-muted text-center">
+              <div className="p-4">
+                <AlertCircle className="mx-auto h-12 w-12 text-destructive" />
+                <p className="mt-2 text-sm font-medium">Failed to load image</p>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  The image URL may be invalid or the storage bucket may be private.
+                </p>
+                <button
+                  onClick={() => {
+                    setImageError(false)
+                    // Force reload by adding timestamp
+                    const img = document.querySelector('img[src*="' + imageUrl + '"]') as HTMLImageElement
+                    if (img) {
+                      img.src = imageUrl + '?t=' + Date.now()
+                    }
+                  }}
+                  className="mt-2 text-xs text-primary hover:underline"
+                >
+                  Retry
+                </button>
+              </div>
+            </div>
+          ) : (
+            <img
+              src={imageUrl}
+              alt="Design analysis"
+              className="w-full h-full object-contain"
+              style={{
+                width: `${imageWidth * displayScale}px`,
+                height: `${imageHeight * displayScale}px`,
+              }}
+              onError={() => {
+                console.error('Image failed to load:', imageUrl)
+                setImageError(true)
+              }}
+            />
+          )}
           
           {/* Overlay issue highlights */}
           {results.map((result) => {

@@ -64,14 +64,26 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Get public URL for the uploaded file
-    // Note: The bucket should be set to public in Supabase for this to work
-    // If using a private bucket, you'll need to use signed URLs instead
-    const { data: urlData } = supabase.storage
+    // Get URL for the uploaded file
+    // Try signed URL first (works for both public and private buckets)
+    // Signed URLs are more reliable and work regardless of bucket settings
+    const { data: signedUrlData, error: signedUrlError } = await supabase.storage
       .from('design-uploads')
-      .getPublicUrl(filePath)
+      .createSignedUrl(filePath, 31536000) // 1 year in seconds
     
-    const fileUrl = urlData.publicUrl
+    let fileUrl: string
+    
+    if (!signedUrlError && signedUrlData?.signedUrl) {
+      // Use signed URL (works for both public and private buckets)
+      fileUrl = signedUrlData.signedUrl
+    } else {
+      // Fallback to public URL if signed URL fails
+      console.warn('Signed URL generation failed, using public URL:', signedUrlError)
+      const { data: urlData } = supabase.storage
+        .from('design-uploads')
+        .getPublicUrl(filePath)
+      fileUrl = urlData.publicUrl
+    }
 
     // Determine file type for database
     const fileType = fileExt?.toLowerCase() === 'png' ? 'png' : 

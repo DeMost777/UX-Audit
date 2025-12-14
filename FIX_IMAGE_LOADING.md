@@ -6,6 +6,9 @@ After uploading an image, you see an error when trying to load the image, and ca
 ## Root Cause
 The Supabase storage bucket `design-uploads` is set to **private** (`public: false`), but the code is trying to use public URLs. Private buckets require signed URLs or the bucket needs to be made public.
 
+## ✅ Solution Implemented
+The code has been updated to **always use signed URLs** when uploading files. This works for both public and private buckets. However, making the bucket public is still recommended for better performance.
+
 ## Solution: Make Storage Bucket Public
 
 ### Option 1: Make Bucket Public (Recommended)

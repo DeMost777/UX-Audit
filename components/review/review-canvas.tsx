@@ -45,6 +45,7 @@ export function ReviewCanvas({
   const [panStart, setPanStart] = useState<{ x: number; y: number } | null>(null)
   const [panOffset, setPanOffset] = useState({ x: 0, y: 0 })
   const [isDragging, setIsDragging] = useState(false)
+  const [imageError, setImageError] = useState(false)
 
   const zoomIn = () => setZoom((prev) => Math.min(prev + 25, 200))
   const zoomOut = () => setZoom((prev) => Math.max(prev - 25, 50))
@@ -181,12 +182,27 @@ export function ReviewCanvas({
           }}
         >
           {/* Screen Image */}
-          <img
-            src={selectedScreen.url}
-            alt={selectedScreen.name}
-            className="h-full w-full object-contain"
-            draggable={false}
-          />
+          {imageError ? (
+            <div className="flex h-full w-full items-center justify-center bg-muted text-center">
+              <div className="p-4">
+                <p className="text-sm font-medium text-destructive">Failed to load image</p>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  The image may be inaccessible. Check storage bucket settings.
+                </p>
+              </div>
+            </div>
+          ) : (
+            <img
+              src={selectedScreen.url}
+              alt={selectedScreen.name}
+              className="h-full w-full object-contain"
+              draggable={false}
+              onError={() => {
+                console.error('Image failed to load:', selectedScreen.url)
+                setImageError(true)
+              }}
+            />
+          )}
 
           {/* Issue Markers Overlay */}
           {selectedScreen.issues.map((issue) => {
