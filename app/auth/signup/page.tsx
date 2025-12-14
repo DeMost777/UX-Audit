@@ -51,8 +51,14 @@ export default function SignUpPage() {
       }
 
       if (data.user) {
-        // Redirect to sign in page after successful signup
-        router.push('/auth/signin?registered=true')
+        // Check if email confirmation is required
+        if (data.user.email_confirmed_at) {
+          // Email already confirmed, redirect to sign in
+          router.push('/auth/signin?registered=true')
+        } else {
+          // Email confirmation required
+          router.push('/auth/signin?registered=true&confirm=required')
+        }
       }
     } catch (err) {
       setError('An error occurred. Please try again.')

@@ -43,7 +43,16 @@ export const authOptions: NextAuthOptions = {
           password: credentials.password as string,
         })
 
-        if (error || !data.user) {
+        if (error) {
+          // Log the error for debugging
+          console.error('Supabase sign in error:', error.message)
+          
+          // Return null to trigger NextAuth error handling
+          // The error message will be available in the signIn callback
+          return null
+        }
+
+        if (!data.user) {
           return null
         }
 

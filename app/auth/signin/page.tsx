@@ -19,6 +19,9 @@ function SignInForm() {
   useEffect(() => {
     if (searchParams.get('registered') === 'true') {
       setSuccess(true)
+      if (searchParams.get('confirm') === 'required') {
+        setError('Please check your email and click the confirmation link before signing in.')
+      }
     }
   }, [searchParams])
 
@@ -35,7 +38,14 @@ function SignInForm() {
       })
 
       if (result?.error) {
-        setError('Invalid email or password')
+        // Check for specific error types
+        if (result.error === 'CredentialsSignin') {
+          setError('Invalid email or password. If you just signed up, please check your email to confirm your account first.')
+        } else {
+          setError(result.error === 'Email not confirmed' 
+            ? 'Please check your email and confirm your account before signing in.'
+            : 'Invalid email or password')
+        }
       } else {
         router.push('/')
         router.refresh()
