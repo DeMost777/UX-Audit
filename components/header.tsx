@@ -95,12 +95,12 @@ export function Header() {
                     <p className="text-xs text-muted-foreground">{session.user.email}</p>
                   </div>
                   <DropdownMenuSeparator />
-                  <Link href="/dashboard">
-                    <DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link href="/dashboard" className="flex w-full items-center">
                       <LayoutDashboard className="mr-2 h-4 w-4" />
                       Dashboard
-                    </DropdownMenuItem>
-                  </Link>
+                    </Link>
+                  </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={() => signOut({ callbackUrl: '/' })}>
                     <LogOut className="mr-2 h-4 w-4" />
