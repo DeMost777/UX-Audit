@@ -60,21 +60,32 @@ export async function GET(
         // Extract file path from URL
         // Format: https://[project].supabase.co/storage/v1/object/public/[bucket]/[path]
         // or: https://[project].supabase.co/storage/v1/object/sign/[bucket]/[path]
-        const urlParts = analysis.file_url.split('/storage/v1/object/')
-        if (urlParts.length > 1) {
-          const remainingPath = urlParts[1]
-          const pathParts = remainingPath.split('/')
-          const bucket = pathParts[0]
-          const filePath = pathParts.slice(1).join('/')
+        const urlMatch = analysis.file_url.match(/\/storage\/v1\/object\/(public|sign)\/([^\/]+)\/(.+)$/)
+        
+        if (urlMatch) {
+          const bucket = urlMatch[2]
+          const filePath = urlMatch[3]
           
           // Generate signed URL (valid for 1 hour)
           const { data: signedUrlData, error: signedError } = await supabase.storage
             .from(bucket)
             .createSignedUrl(filePath, 3600)
           
-          if (!signedError && signedUrlData) {
+          if (!signedError && signedUrlData?.signedUrl) {
             imageUrl = signedUrlData.signedUrl
+            console.log('Generated signed URL for analysis:', analysis.id)
+          } else {
+            console.warn('Failed to generate signed URL:', signedError?.message)
+            // If signed URL fails and bucket is public, try public URL
+            if (urlMatch[1] === 'public') {
+              const { data: publicUrlData } = supabase.storage
+                .from(bucket)
+                .getPublicUrl(filePath)
+              imageUrl = publicUrlData.publicUrl
+            }
           }
+        } else {
+          console.warn('Could not parse storage URL:', analysis.file_url)
         }
       } catch (err) {
         console.error('Error generating signed URL:', err)

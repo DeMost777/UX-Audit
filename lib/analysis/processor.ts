@@ -5,6 +5,7 @@
 import sharp from 'sharp'
 import { analyzeImage, type AnalysisIssue } from './rules'
 import type { ImageMetadata } from './rules'
+import { analyzeWithGemini } from '@/lib/ai/gemini'
 
 /**
  * Fetch image and extract metadata
@@ -53,13 +54,21 @@ export async function processAnalysis(
   // Get image metadata
   const metadata = await getImageMetadata(imageUrl)
 
-  // Run analysis
+  // Run deterministic analysis
   const issues = await analyzeImage(imageUrl, metadata)
+
+  // Run Gemini (best-effort). Never fail the whole analysis if Gemini fails.
+  let geminiIssues: AnalysisIssue[] = []
+  try {
+    geminiIssues = await analyzeWithGemini(imageUrl, metadata)
+  } catch (err) {
+    console.error('Gemini analysis failed (continuing with rule-based results):', err)
+  }
 
   const duration = Date.now() - startTime
 
   return {
-    issues,
+    issues: [...issues, ...geminiIssues],
     metadata,
     duration,
   }

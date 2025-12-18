@@ -13,7 +13,10 @@ import {
   Filter,
   Search,
   TrendingUp,
+  Sun,
+  Moon,
 } from 'lucide-react'
+import { useTheme } from 'next-themes'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 import { formatDistanceToNow } from 'date-fns'
@@ -43,6 +46,8 @@ interface DashboardStats {
 export default function DashboardPage() {
   const router = useRouter()
   const { data: session, status: sessionStatus } = useSession()
+  const { theme, setTheme } = useTheme()
+  const [mounted, setMounted] = useState(false)
   const [analyses, setAnalyses] = useState<Analysis[]>([])
   const [stats, setStats] = useState<DashboardStats>({
     total: 0,
@@ -55,6 +60,10 @@ export default function DashboardPage() {
   const [error, setError] = useState<string | null>(null)
   const [statusFilter, setStatusFilter] = useState<string | null>(null)
   const [searchQuery, setSearchQuery] = useState('')
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   useEffect(() => {
     if (sessionStatus === 'loading') return
@@ -154,11 +163,29 @@ export default function DashboardPage() {
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-8 sm:px-6 lg:px-8">
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold">Dashboard</h1>
-          <p className="mt-2 text-muted-foreground">
-            View and manage your design analyses
-          </p>
+        <div className="mb-8 flex items-start justify-between">
+          <div>
+            <h1 className="text-3xl font-bold">Dashboard</h1>
+            <p className="mt-2 text-muted-foreground">
+              View and manage your design analyses
+            </p>
+          </div>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+            className="h-9 w-9"
+          >
+            {mounted ? (
+              theme === 'dark' ? (
+                <Sun className="h-5 w-5" />
+              ) : (
+                <Moon className="h-5 w-5" />
+              )
+            ) : (
+              <div className="h-5 w-5" />
+            )}
+          </Button>
         </div>
 
         {/* Statistics Cards */}

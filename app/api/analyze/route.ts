@@ -41,18 +41,46 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if already processed
-    if (analysis.status === 'completed' || analysis.status === 'processing') {
-      return NextResponse.json(
-        { error: 'Analysis already processed or in progress' },
-        { status: 400 }
-      )
+    if (analysis.status === 'completed') {
+      return NextResponse.json({
+        success: true,
+        analysis: {
+          id: analysisId,
+          status: 'completed',
+        },
+      })
     }
 
-    // Update status to processing
-    await supabase
+    if (analysis.status === 'processing') {
+      return NextResponse.json({
+        success: true,
+        analysis: {
+          id: analysisId,
+          status: 'processing',
+        },
+      })
+    }
+
+    // Atomically claim processing (prevents double-processing races)
+    const { data: claimed, error: claimError } = await supabase
       .from('analyses')
       .update({ status: 'processing' })
       .eq('id', analysisId)
+      .eq('user_id', user.id)
+      .in('status', ['pending', 'failed'])
+      .select('id,status')
+      .single()
+
+    if (claimError || !claimed) {
+      // Someone else likely started it between the initial read and this update
+      return NextResponse.json({
+        success: true,
+        analysis: {
+          id: analysisId,
+          status: 'processing',
+        },
+      })
+    }
 
     try {
       // Process the analysis
@@ -80,13 +108,16 @@ export async function POST(request: NextRequest) {
       // Save metadata
       const { error: metadataError } = await supabase
         .from('analysis_metadata')
-        .insert({
-          analysis_id: analysisId,
-          image_width: metadata.width,
-          image_height: metadata.height,
-          total_issues: issues.length,
-          analysis_duration_ms: duration,
-        })
+        .upsert(
+          {
+            analysis_id: analysisId,
+            image_width: metadata.width,
+            image_height: metadata.height,
+            total_issues: issues.length,
+            analysis_duration_ms: duration,
+          },
+          { onConflict: 'analysis_id' }
+        )
 
       if (metadataError) {
         console.error('Error saving metadata:', metadataError)

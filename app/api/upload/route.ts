@@ -65,24 +65,31 @@ export async function POST(request: NextRequest) {
     }
 
     // Get URL for the uploaded file
-    // Try signed URL first (works for both public and private buckets)
-    // Signed URLs are more reliable and work regardless of bucket settings
-    const { data: signedUrlData, error: signedUrlError } = await supabase.storage
+    // For public buckets, use public URL (simpler and faster)
+    // For private buckets, use signed URL
+    const { data: urlData } = supabase.storage
       .from('design-uploads')
-      .createSignedUrl(filePath, 31536000) // 1 year in seconds
+      .getPublicUrl(filePath)
     
-    let fileUrl: string
+    let fileUrl = urlData.publicUrl
     
-    if (!signedUrlError && signedUrlData?.signedUrl) {
-      // Use signed URL (works for both public and private buckets)
-      fileUrl = signedUrlData.signedUrl
-    } else {
-      // Fallback to public URL if signed URL fails
-      console.warn('Signed URL generation failed, using public URL:', signedUrlError)
-      const { data: urlData } = supabase.storage
+    // Also try to get signed URL as backup (works for both public and private)
+    // This ensures images load even if bucket settings change
+    try {
+      const { data: signedUrlData, error: signedUrlError } = await supabase.storage
         .from('design-uploads')
-        .getPublicUrl(filePath)
-      fileUrl = urlData.publicUrl
+        .createSignedUrl(filePath, 31536000) // 1 year in seconds
+      
+      if (!signedUrlError && signedUrlData?.signedUrl) {
+        // Prefer signed URL as it works for both public and private buckets
+        fileUrl = signedUrlData.signedUrl
+        console.log('Using signed URL for upload:', filePath)
+      } else {
+        console.log('Using public URL for upload:', filePath, signedUrlError?.message)
+      }
+    } catch (err) {
+      console.warn('Error generating signed URL, using public URL:', err)
+      // Continue with public URL
     }
 
     // Determine file type for database
