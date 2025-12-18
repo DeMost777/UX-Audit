@@ -18,6 +18,7 @@ export function Header() {
   const { data: session, status } = useSession()
   const { theme, setTheme } = useTheme()
   const [mounted, setMounted] = useState(false)
+  const homeHref = session?.user ? '/dashboard' : '/'
 
   useEffect(() => {
     setMounted(true)
@@ -28,7 +29,7 @@ export function Header() {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 items-center justify-between">
           <div className="flex items-center gap-12">
-            <Link href="/" className="flex items-center gap-2">
+            <Link href={homeHref} className="flex items-center gap-2">
               <div className="flex h-8 w-8 items-center justify-center rounded-md bg-accent">
                 <svg
                   className="h-5 w-5 text-accent-foreground"

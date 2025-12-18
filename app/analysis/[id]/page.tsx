@@ -159,12 +159,12 @@ export default function AnalysisPage() {
         <div className="text-center">
           <h1 className="text-2xl font-bold">Analysis not found</h1>
           <p className="mt-2 text-muted-foreground">{error || 'The analysis you\'re looking for doesn\'t exist.'}</p>
-          <Link href="/" className="mt-4 inline-block">
-            <Button>
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Back to home
-            </Button>
-          </Link>
+          <Button asChild className="mt-4 gap-2">
+            <Link href="/dashboard">
+              <ArrowLeft className="h-4 w-4" />
+              Back to Dashboard
+            </Link>
+          </Button>
         </div>
       </div>
     )
@@ -173,12 +173,12 @@ export default function AnalysisPage() {
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-8 sm:px-6 lg:px-8">
-        <Link href="/" className="mb-6 inline-block">
-          <Button variant="ghost">
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Back
-          </Button>
-        </Link>
+        <Button asChild variant="ghost" className="mb-6 gap-2">
+          <Link href="/dashboard">
+            <ArrowLeft className="h-4 w-4" />
+            Back to Dashboard
+          </Link>
+        </Button>
 
         <div className="mb-8 flex items-center justify-between">
           <div>
